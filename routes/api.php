@@ -36,5 +36,8 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function () {
 
-    Route::post('category/create', [ AdminController::class, 'createCategory']);
+    Route::get('categories', [ AdminController::class, 'getCategories']);
+    Route::post('categories/create', [ AdminController::class, 'createCategory']);
+    Route::post('subcategories/create', [ AdminController::class, 'createSubcategory']);
+    Route::post('transactions/create', [ AdminController::class, 'createTransaction']);
 });

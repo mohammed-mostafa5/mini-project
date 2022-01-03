@@ -29,15 +29,13 @@ class AuthController extends Controller
 
     public function login()
     {
-        request()->validate([
+        $credentials = request()->validate([
             'email'    => 'required|email|exists:users,email',
             'password' => 'required|string|max:191'
         ]);
 
-        $user = User::where('email', request('email'))->first();
-// dd($user->password );
-        if (! Hash::check( request('password'), $user->password )) {
-            ValidationException::withMessages(['password' => 'Wrong password!, Please try again']);
+        if (!Auth::attempt($credentials) ) {
+            throw ValidationException::withMessages(['password' => 'Wrong password!, Please try again']);
         }
 
         $token = request()->user()->createToken('token');
