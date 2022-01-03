@@ -17,4 +17,12 @@ class Payment extends Model
         'payment_method',
         'details',
     ];
+
+
+    ############################## Relations ##############################
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
+    }
 }

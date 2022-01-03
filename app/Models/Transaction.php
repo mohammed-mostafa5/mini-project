@@ -9,6 +9,11 @@ class Transaction extends Model
 {
     use HasFactory;
 
+    const STATUS_PENDING     = 0,
+          STATUS_PAID        = 1,
+          STATUS_OUTSTANDING = 2,
+          STATUS_OVERDUE     = 3;
+
 
     protected $fillable = [
         'category_id',
@@ -41,6 +46,6 @@ class Transaction extends Model
 
     public function payments()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Payment::class, 'transaction_id', 'id');
     }
 }

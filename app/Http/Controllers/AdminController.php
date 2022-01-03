@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\PaymentResource;
-use App\Http\Resources\TransactionResource;
-use App\Models\Category;
+use Carbon\Carbon;
 use App\Models\Payment;
+use App\Models\Category;
 use App\Models\Subcategory;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Http\Resources\PaymentResource;
+use App\Http\Resources\TransactionResource;
 
 class AdminController extends Controller
 {
@@ -73,6 +74,13 @@ class AdminController extends Controller
 
         $payment = Payment::create($validated);
 
+        $transaction = Transaction::find(request('transaction_id'));
+
+        if ($transaction->due_on >= now() && $transaction->payments->sum('amount') == $transaction->amount) {
+            $transaction->update(['status' => Transaction::STATUS_PAID]);
+        }
+
+
         return response()->json(compact('payment'));
     }
 
@@ -92,18 +100,51 @@ class AdminController extends Controller
             'starting_date' => 'required|date',
             'ending_date'   => 'required|date'
         ]);
-        // $transactions = Transaction::with('payments')
-        //         ->whereBetween('due_on',[request()->input('starting_date'), request()->input('ending_date')])
-        //         ->get();
-        $transactions = Transaction::with(['payments' => function ($query) {
-            $query->whereBetween('paid_on', [request()->input('starting_date'), request()->input('ending_date')]);
-        }])->get();
 
-        $sum = 0;
-        foreach ($transactions as $transactions) {
-            $sum += $transactions->payments->sum('amount');
+        // Calculate Period
+        $from = Carbon::parse(request('starting_date'));
+        $to = Carbon::parse(request('ending_date'));
+
+        $diff = $to->diffInMonths($from);
+        $period = $diff >= 12 ? (round($diff / 12)) . ' Years' : $diff . ' Months';
+
+
+
+        // Calculate Paid Amount
+        $paidTransactions = Transaction::where('status', Transaction::STATUS_PAID)
+                                    ->whereBetween('due_on', [request()->input('starting_date'), request()->input('ending_date')])
+                                    ->get();
+
+        $paidAmount = 0;
+        foreach ($paidTransactions as $transaction) {
+            $paidAmount += $transaction->payments->sum('amount');
         }
-        return ($sum);
-        return response()->json(compact('transactions'));
+
+        // Calculate Outstanding Amount
+        $outstandingTransactions = Transaction::where('status', Transaction::STATUS_OUTSTANDING)
+                                    ->whereBetween('due_on', [request()->input('starting_date'), request()->input('ending_date')])
+                                    ->get();
+
+        $outstandingAmount = 0;
+        foreach ($outstandingTransactions as $transaction) {
+            $outstandingAmount += $transaction->payments->sum('amount');
+        }
+
+        // Calculate overdue Amount
+        $overdueTransactions = Transaction::where('status', Transaction::STATUS_OVERDUE)
+                                    ->whereBetween('due_on', [request()->input('starting_date'), request()->input('ending_date')])
+                                    ->get();
+
+        $overdueAmount = 0;
+        foreach ($overdueTransactions as $transaction) {
+            $overdueAmount += $transaction->payments->sum('amount');
+        }
+
+        return response()->json([
+            'period' => $period,
+            'paid_amount' => $paidAmount,
+            'outstanding_amount' => $outstandingAmount,
+            'overdue_amount' => $overdueAmount
+        ]);
     }
 }
