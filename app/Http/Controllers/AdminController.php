@@ -51,7 +51,7 @@ class AdminController extends Controller
             'subcategory_id'        => 'required|integer|exists:subcategories,id',
             'payer_id'              => 'required|integer|exists:users,id',
             'amount'                => 'required|integer',
-            'due_on'                => 'required',
+            'due_on'                => 'required|date',
             'vat'                   => 'required|integer',
             'is_vat_inclusive'      => 'required|in:0,1',
         ]);
@@ -66,7 +66,7 @@ class AdminController extends Controller
         $validated = request()->validate([
             'transaction_id'    => 'required|integer|exists:transactions,id',
             'amount'            => 'required|integer',
-            'paid_on'           => 'required',
+            'paid_on'           => 'required|date',
             'payment_method'    => 'required|in:1,2',
             'details'           => 'nullable|string|max:191',
         ]);
@@ -78,7 +78,7 @@ class AdminController extends Controller
 
     public function viewTransaction(Transaction $transaction)
     {
-        return new TransactionResource($transaction->load('category','subcategory', 'payer'));
+        return new TransactionResource($transaction->load('category', 'subcategory', 'payer'));
     }
 
     public function viewPayment(Payment $payment)
@@ -86,5 +86,24 @@ class AdminController extends Controller
         return new PaymentResource($payment);
     }
 
+    public function generateReport()
+    {
+        request()->validate([
+            'starting_date' => 'required|date',
+            'ending_date'   => 'required|date'
+        ]);
+        // $transactions = Transaction::with('payments')
+        //         ->whereBetween('due_on',[request()->input('starting_date'), request()->input('ending_date')])
+        //         ->get();
+        $transactions = Transaction::with(['payments' => function ($query) {
+            $query->whereBetween('paid_on', [request()->input('starting_date'), request()->input('ending_date')]);
+        }])->get();
 
+        $sum = 0;
+        foreach ($transactions as $transactions) {
+            $sum += $transactions->payments->sum('amount');
+        }
+        return ($sum);
+        return response()->json(compact('transactions'));
+    }
 }

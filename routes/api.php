@@ -46,4 +46,5 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     Route::get('transactions/view/{transaction}', [ AdminController::class, 'viewTransaction']);
     Route::post('payments/create', [ AdminController::class, 'createPayment']);
     Route::get('payments/view/{payment}', [ AdminController::class, 'viewPayment']);
+    Route::get('report/generate', [ AdminController::class, 'generateReport']);
 });
