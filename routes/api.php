@@ -40,4 +40,5 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     Route::post('categories/create', [ AdminController::class, 'createCategory']);
     Route::post('subcategories/create', [ AdminController::class, 'createSubcategory']);
     Route::post('transactions/create', [ AdminController::class, 'createTransaction']);
+    Route::post('payments/create', [ AdminController::class, 'createPayment']);
 });

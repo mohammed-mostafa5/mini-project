@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Payment;
 use App\Models\Subcategory;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -56,6 +57,20 @@ class AdminController extends Controller
         $transaction = Transaction::create($validated);
 
         return response()->json(compact('transaction'));
+    }
+
+    public function createPayment()
+    {
+        $validated = request()->validate([
+            'transaction_id'    => 'required|integer|exists:transactions,id',
+            'amount'            => 'required|integer',
+            'paid_on'           => 'required',
+            'details'           => 'nullable|string|max:191',
+        ]);
+
+        $payment = Payment::create($validated);
+
+        return response()->json(compact('payment'));
     }
 
 

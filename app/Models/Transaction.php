@@ -38,4 +38,9 @@ class Transaction extends Model
     {
         return $this->belongsTo(Subcategory::class);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 }
