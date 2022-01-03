@@ -14,6 +14,7 @@ class Payment extends Model
         'transaction_id',
         'amount',
         'paid_on',
+        'payment_method',
         'details',
     ];
 }

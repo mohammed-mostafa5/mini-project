@@ -45,9 +45,18 @@ class User extends Authenticatable
 
 
 
-
+    // prepare password before register
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::make($value);
     }
+
+
+    ############################### Relations ###############################
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'payer_id', 'id');
+    }
+
 }

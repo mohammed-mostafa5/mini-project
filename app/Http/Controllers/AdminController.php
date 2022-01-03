@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PaymentResource;
+use App\Http\Resources\TransactionResource;
 use App\Models\Category;
 use App\Models\Payment;
 use App\Models\Subcategory;
@@ -65,12 +67,23 @@ class AdminController extends Controller
             'transaction_id'    => 'required|integer|exists:transactions,id',
             'amount'            => 'required|integer',
             'paid_on'           => 'required',
+            'payment_method'    => 'required|in:1,2',
             'details'           => 'nullable|string|max:191',
         ]);
 
         $payment = Payment::create($validated);
 
         return response()->json(compact('payment'));
+    }
+
+    public function viewTransaction(Transaction $transaction)
+    {
+        return new TransactionResource($transaction->load('category','subcategory', 'payer'));
+    }
+
+    public function viewPayment(Payment $payment)
+    {
+        return new PaymentResource($payment);
     }
 
 

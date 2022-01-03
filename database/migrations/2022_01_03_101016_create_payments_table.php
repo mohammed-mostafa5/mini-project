@@ -17,11 +17,12 @@ class CreatePaymentsTable extends Migration
             $table->id();
             $table->foreignId('transaction_id')->constrained('transactions');
             $table->integer('amount')
-                ->comment('The paid amount. This can be part of the total
-                transaction amount. For example, the customer can
-                pay the transaction on installments and each time a
-                payment is recorded');
+            ->comment('The paid amount. This can be part of the total
+            transaction amount. For example, the customer can
+            pay the transaction on installments and each time a
+            payment is recorded');
 
+            $table->unsignedTinyInteger('payment_method')->comment(' 1 => cash, 2 => visa ');
             $table->dateTime('paid_on')->comment('The date on which this payment was received');
             $table->string('details')->nullable()->comment('Additional comments that can be entered by the admin');
             $table->timestamps();
