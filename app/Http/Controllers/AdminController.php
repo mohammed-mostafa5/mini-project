@@ -76,6 +76,10 @@ class AdminController extends Controller
 
         $transaction = Transaction::find(request('transaction_id'));
 
+        if ($transaction->due_on >= now() && $transaction->payments->sum('amount') < $transaction->amount) {
+            $transaction->update(['status' => Transaction::STATUS_OUTSTANDING]);
+        }
+
         if ($transaction->due_on >= now() && $transaction->payments->sum('amount') == $transaction->amount) {
             $transaction->update(['status' => Transaction::STATUS_PAID]);
         }
